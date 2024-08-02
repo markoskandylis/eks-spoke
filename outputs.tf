@@ -6,7 +6,6 @@ output "configure_kubectl" {
   EOT
 }
 
-
 output "configure_argocd" {
   description = "Terminal Setup"
   value       = <<-EOT
@@ -18,7 +17,7 @@ output "configure_argocd" {
     echo "ArgoCD Username: admin"
     echo "ArgoCD Password: $(kubectl get secrets argocd-initial-admin-secret -n argocd --template="{{index .data.password | base64decode}}")"
     echo Port Forward: http://localhost:8080
-    kubectl port-forward -n argocd svc/argo-cd-argocd-server 8080:80
+    kubectl port-forward -n argocd svc/argocd-server 8080:80
     EOT
 }
 
@@ -29,33 +28,6 @@ output "access_argocd" {
     aws eks --region ${local.region} update-kubeconfig --name ${module.eks.cluster_name}
     echo "ArgoCD Username: admin"
     echo "ArgoCD Password: $(kubectl get secrets argocd-initial-admin-secret -n argocd --template="{{index .data.password | base64decode}}")"
-    echo "ArgoCD URL: https://$(kubectl get svc -n argocd argo-cd-argocd-server -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
+    echo "ArgoCD URL: https://$(kubectl get svc -n argocd argocd-server -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
     EOT
-}
-
-
-output "argocd_iam_role_arn" {
-  description = "IAM Role for ArgoCD Cluster Hub, use to connect to spoke clusters"
-  value       = module.argocd_irsa.iam_role_arn
-}
-
-output "cluster_name" {
-  description = "Cluster Hub name"
-  value       = module.eks.cluster_name
-}
-output "cluster_endpoint" {
-  description = "Cluster Hub endpoint"
-  value       = module.eks.cluster_endpoint
-}
-output "cluster_certificate_authority_data" {
-  description = "Cluster Hub certificate_authority_data"
-  value       = module.eks.cluster_certificate_authority_data
-}
-output "cluster_region" {
-  description = "Cluster Hub region"
-  value       = local.region
-}
-
-output "ssh_user" {
-  value = aws_iam_user_ssh_key.user_ssh_key.id
 }
